@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import {View, Text, ImageBackground, StyleSheet, Image, TextInput, TouchableOpacity,Alert} from 'react-native';
+import {View, Text, ImageBackground, StyleSheet, Image, TextInput, TouchableOpacity, Alert,DatePickerIOS} from 'react-native';
 import {
     widthPercentageToDP as wp,
     heightPercentageToDP as hp,
@@ -7,6 +7,9 @@ import {
     removeOrientationListener as rol
 } from 'react-native-responsive-screen';
 import Constant from '../helper/constant';
+import { DatePickerDialog } from 'react-native-datepicker-dialog'
+import moment from 'moment';
+
 
 export default class Register extends Component {
     constructor() {
@@ -17,16 +20,22 @@ export default class Register extends Component {
             uname: '',
             email: '',
             password: '',
-            rePass:'',
+            rePass: '',
             phoneNo: '',
             dob: '',
+            DateText: new Date(),
         }
+
     }
 
-    onLoginClick = () => {
+    onRegClick = () => {
         debugger;
-        fetch('localhost:3009/user',{
+        fetch('http://localhost:3009/user', {
             method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
             body: JSON.stringify({
                 fName: this.state.fName,
                 lName: this.state.lName,
@@ -41,33 +50,38 @@ export default class Register extends Component {
             return response.json();
         }).then(function (result) {
             // console.log(result);
-            if(!result.error){
-                this.setState({
-                    status: result.error,
-                    wholeResult: result,
-                });
-                Alert.alert("User register successfully \n userId: "+that.state.wholeResult.user.uid);
-                console.log(that.state.wholeResult.user.uid);
-            }else{
+            if (!result.error) {
+                Alert.alert("User register successfully,...");
+            } else {
                 Alert.alert(result.error_msg);
                 console.log(result);
             }
-
-
         }).catch(function (error) {
-            console.log("-------- error ------- "+error);
-            alert("result:"+error)
+            console.log("-------- error ------- " + error);
+            alert("result:" + error)
         });
+    };
+    onLoginClick = () => {
+        this.props.navigation.navigate('Login');
+    };
 
-
-
-
-        //this.props.navigation.navigate('Login');
+    DatePicker = () => {
+        this.refs.DatePickerDialog.open({
+            date: this.state.DateText,
+        });
+    };
+    onDatePicked = (date) => {
+        this.setState({
+            DateText: date,
+            dob: moment(date).format('DD-MMM-YYYY')
+        });
     }
 
     render() {
         return (
+
             <View style={styles.mainContainer}>
+
                 <ImageBackground source={{uri: 'imgBackground'}} style={styles.imgContainer}>
                     <View style={styles.subContent}>
                         <View style={styles.hbox}>
@@ -89,18 +103,22 @@ export default class Register extends Component {
                             <View style={styles.nbox}>
                                 <View style={styles.nsBox}>
 
-                                        <TextInput style={styles.header}
-                                                   placeholder={'FirstName'}
-                                                   onChangeText={text=>{this.setState({fName:text})}}
-                                        />
+                                    <TextInput style={styles.header}
+                                               placeholder={'FirstName'}
+                                               onChangeText={text => {
+                                                   this.setState({fName: text})
+                                               }}
+                                    />
 
                                 </View>
                                 <View style={[styles.nsBox, {marginLeft: 5}]}>
 
-                                        <TextInput style={styles.header}
-                                                   placeholder={'LastName'}
-                                                   onChangeText={text=>{this.setState({lName:text})}}
-                                        />
+                                    <TextInput style={styles.header}
+                                               placeholder={'LastName'}
+                                               onChangeText={text => {
+                                                   this.setState({lName: text})
+                                               }}
+                                    />
                                 </View>
                             </View>
                             <View style={styles.rbox}>
@@ -112,7 +130,9 @@ export default class Register extends Component {
                                     <View>
                                         <TextInput style={styles.input}
                                                    placeholder={'enter USERNAME'}
-                                                   onChangeText={text=>{this.setState({uName:text})}}
+                                                   onChangeText={text => {
+                                                       this.setState({uName: text})
+                                                   }}
                                         />
                                     </View>
                                 </View>
@@ -124,7 +144,9 @@ export default class Register extends Component {
                                 <View style={styles.cBox}>
                                     <TextInput style={styles.input}
                                                placeholder={'enter EMAIL'}
-                                               onChangeText={text=>{this.setState({email:text})}}
+                                               onChangeText={text => {
+                                                   this.setState({email: text})
+                                               }}
                                     />
 
                                 </View>
@@ -137,7 +159,9 @@ export default class Register extends Component {
                                     <TextInput style={styles.input}
                                                secureTextEntry={true}
                                                placeholder={'enter PASSWORD'}
-                                               onChangeText={text=>{this.setState({password:text})}}
+                                               onChangeText={text => {
+                                                   this.setState({password: text})
+                                               }}
                                     />
                                 </View>
                             </View>
@@ -149,7 +173,9 @@ export default class Register extends Component {
                                     <TextInput style={styles.input}
                                                secureTextEntry={true}
                                                placeholder={'Please,ReEnter PASSWORD'}
-                                               onChangeText={text=>{this.setState({rePass:text})}}
+                                               onChangeText={text => {
+                                                   this.setState({rePass: text})
+                                               }}
                                     />
 
                                 </View>
@@ -160,28 +186,39 @@ export default class Register extends Component {
                                 </View>
                                 <View style={styles.cBox}>
                                     <TextInput style={styles.input}
-                                               secureTextEntry={true}
                                                placeholder={'enter phoneNo'}
-                                               onChangeText={text=>{this.setState({phoneNo:text})}}
+                                               onChangeText={text => {
+                                                   this.setState({phoneNo: text})
+                                               }}
                                     />
                                 </View>
                             </View>
-                            <View style={styles.rbox}>
+
+
+                            <View >
+                                <TouchableOpacity style={styles.rbox} onPress={this.DatePicker.bind(this)}>
+
                                 <View style={styles.iBox}>
-                                    <Image source={{uri: 'dob'}} style={styles.imgBox}/>
+
+                                        <Image source={{uri: 'dob'}} style={styles.imgBox}/>
+
                                 </View>
+
+                                {/*<View style={styles.cBox}>*/}
+
                                 <View style={styles.cBox}>
                                     <TextInput style={styles.input}
-                                               secureTextEntry={true}
-                                               placeholder={'enter DateofBirth'}
-                                               onChangeText={text=>{this.setState({dob:text})}}
+                                               placeholder={'Select DateofBirth'}
+                                               editable={false}
+                                               value={this.state.dob}
                                     />
                                 </View>
-                            </View>
-
+                                </TouchableOpacity>
+                                <DatePickerDialog ref="DatePickerDialog" onDatePicked={this.onDatePicked.bind(this)} />
+                             </View>
 
                             <View style={styles.regButton}>
-                                <TouchableOpacity>
+                                <TouchableOpacity onPress={this.onRegClick}>
                                     <Text style={styles.boldTxt}>Register</Text>
                                 </TouchableOpacity>
                             </View>
@@ -291,7 +328,7 @@ const styles = StyleSheet.create({
         //flexDirection: 'column',
         justifyContent: 'center',
         width: wp(65),
-        // backgroundColor: 'white',
+        //backgroundColor: 'white',
     },
     input: {
         fontSize: 18,
@@ -302,8 +339,8 @@ const styles = StyleSheet.create({
     header: {
         fontSize: 18,
         height: 100,
-        backgroundColor:'red',
-
+        //backgroundColor:'red',
+        width: wp(39.5)
         //fontColor:'black',
     },
     imgBox: {
