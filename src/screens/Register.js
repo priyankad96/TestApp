@@ -1,5 +1,15 @@
 import React, {Component} from 'react';
-import {View, Text, ImageBackground, StyleSheet, Image, TextInput, TouchableOpacity, Alert,DatePickerIOS} from 'react-native';
+import {
+    View,
+    Text,
+    ImageBackground,
+    StyleSheet,
+    Image,
+    TextInput,
+    TouchableOpacity,
+    Alert,
+    DatePickerIOS
+} from 'react-native';
 import {
     widthPercentageToDP as wp,
     heightPercentageToDP as hp,
@@ -7,11 +17,12 @@ import {
     removeOrientationListener as rol
 } from 'react-native-responsive-screen';
 import Constant from '../helper/constant';
-import { DatePickerDialog } from 'react-native-datepicker-dialog'
+import {DatePickerDialog} from 'react-native-datepicker-dialog'
 import moment from 'moment';
-
-
+import {isEmail,isAlpha,isPhoneNo} from '../screens/validator';
+let msg='';
 export default class Register extends Component {
+
     constructor() {
         super();
         this.state = {
@@ -24,45 +35,89 @@ export default class Register extends Component {
             phoneNo: '',
             dob: '',
             DateText: new Date(),
+            isErr:false,
+            errMsg:''
         }
+    }
 
+    isEmail=(email)=>{
+        if(!isEmail.match(email)){
+            alert('wrong Email');
+            this.setState({isErr:true})
+        }
+    }
+
+    isAlpha=(text)=>{
+        if(!isAlpha.match(text)){
+            alert('you must enter only aplphabets..');
+            this.setState({isErr:true})
+        }
+    }
+    isPhoneNo=(text)=>{
+        if(!isAlpha.match(text)){
+            alert('Enter valid MobileNo....');
+            this.setState({isErr:true})
+        }
     }
 
     onRegClick = () => {
         debugger;
-        fetch('http://localhost:3009/user', {
-            method: 'POST',
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                fName: this.state.fName,
-                lName: this.state.lName,
-                uName: this.state.uName,
-                email: this.state.email,
-                password: this.state.password,
-                phoneNo: this.state.phoneNo,
-                dob: this.state.dob,
+        let navigation=this.props.navigation;
+        const {fName, lName, uname, email, password, rePass, phoneNo, dob,isErr} = this.state;
 
-            })
-        }).then(function (response) {
-            return response.json();
-        }).then(function (result) {
-            // console.log(result);
-            if (!result.error) {
-                Alert.alert("User register successfully,...");
-            } else {
-                Alert.alert(result.error_msg);
-                console.log(result);
-            }
-        }).catch(function (error) {
-            console.log("-------- error ------- " + error);
-            alert("result:" + error)
-        });
+        if(fName==='' && lName==='' &&  uname==='' &&  email==='' &&  password ==='' && rePass==='' &&  phoneNo==='' &&  dob==='')
+        {
+            debugger
+            alert('Please enter all details..');
+        }
+        else if(!this.state.isErr){
+            alert('Please enter all detail carefully..');
+        }
+        else if(password===rePass)
+        {
+            debugger
+            fetch('http://localhost:3009/user', {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    fName: this.state.fName,
+                    lName: this.state.lName,
+                    uName: this.state.uName,
+                    email: this.state.email,
+                    password: this.state.password,
+                    phoneNo: this.state.phoneNo,
+                    dob: this.state.dob,
+
+                })
+            }).then(function (response) {
+                return response.json();
+            }).then(function (result) {
+                // console.log(result);
+                if (!result.error) {
+                   // Alert.alert("User register successfully,...");
+                    navigation.navigate('upImage');
+
+                } else {
+                    Alert.alert(result.error_msg);
+                    console.log(result);
+                }
+            }).catch(function (error) {
+                console.log("-------- error ------- " + error);
+                alert("result:" + error)
+            });
+        }else{
+            this.setState({password:''});
+            this.setState({rePass:''});
+            alert('Re-enter Password and RePasssword');
+
+        }
     };
     onLoginClick = () => {
         this.props.navigation.navigate('Login');
+
     };
 
     DatePicker = () => {
@@ -108,6 +163,9 @@ export default class Register extends Component {
                                                onChangeText={text => {
                                                    this.setState({fName: text})
                                                }}
+                                               onBlur={ ()=>{
+                                                   this.isAlpha(this.state.fName)}
+                                               }
                                     />
 
                                 </View>
@@ -118,6 +176,9 @@ export default class Register extends Component {
                                                onChangeText={text => {
                                                    this.setState({lName: text})
                                                }}
+                                               onBlur={ ()=>{
+                                                   this.isAlpha(this.state.lName)}
+                                               }
                                     />
                                 </View>
                             </View>
@@ -147,6 +208,9 @@ export default class Register extends Component {
                                                onChangeText={text => {
                                                    this.setState({email: text})
                                                }}
+                                               onBlur={ ()=>{
+                                                   this.isEmail(this.state.email)}
+                                               }
                                     />
 
                                 </View>
@@ -159,6 +223,7 @@ export default class Register extends Component {
                                     <TextInput style={styles.input}
                                                secureTextEntry={true}
                                                placeholder={'enter PASSWORD'}
+                                               clearButtonMode='always'
                                                onChangeText={text => {
                                                    this.setState({password: text})
                                                }}
@@ -173,6 +238,7 @@ export default class Register extends Component {
                                     <TextInput style={styles.input}
                                                secureTextEntry={true}
                                                placeholder={'Please,ReEnter PASSWORD'}
+                                               clearButtonMode='always'
                                                onChangeText={text => {
                                                    this.setState({rePass: text})
                                                }}
@@ -190,32 +256,32 @@ export default class Register extends Component {
                                                onChangeText={text => {
                                                    this.setState({phoneNo: text})
                                                }}
+                                               onBlur={ ()=>{
+                                                   this.isPhoneNo(this.state.phoneNo)}
+                                               }
                                     />
                                 </View>
                             </View>
 
 
-                            <View >
+                            <View>
                                 <TouchableOpacity style={styles.rbox} onPress={this.DatePicker.bind(this)}>
-
-                                <View style={styles.iBox}>
-
+                                    <View style={styles.iBox}>
                                         <Image source={{uri: 'dob'}} style={styles.imgBox}/>
+                                    </View>
 
-                                </View>
+                                    {/*<View style={styles.cBox}>*/}
 
-                                {/*<View style={styles.cBox}>*/}
-
-                                <View style={styles.cBox}>
-                                    <TextInput style={styles.input}
-                                               placeholder={'Select DateofBirth'}
-                                               editable={false}
-                                               value={this.state.dob}
-                                    />
-                                </View>
+                                    <View style={styles.cBox}>
+                                        <TextInput style={styles.input}
+                                                   placeholder={'Select DateofBirth'}
+                                                   editable={false}
+                                                   value={this.state.dob}
+                                        />
+                                    </View>
                                 </TouchableOpacity>
-                                <DatePickerDialog ref="DatePickerDialog" onDatePicked={this.onDatePicked.bind(this)} />
-                             </View>
+                                <DatePickerDialog ref="DatePickerDialog" onDatePicked={this.onDatePicked.bind(this)}/>
+                            </View>
 
                             <View style={styles.regButton}>
                                 <TouchableOpacity onPress={this.onRegClick}>
@@ -230,16 +296,10 @@ export default class Register extends Component {
                                     <Text style={styles.boldTxt}>Login</Text>
                                 </TouchableOpacity>
                             </View>
-
-
                         </View>
-
-
                     </View>
                 </ImageBackground>
-
             </View>
-
         );
     }
 }
@@ -356,14 +416,14 @@ const styles = StyleSheet.create({
     regButton: {
         height: wp('15'),
         backgroundColor: '#F21541',
-        marginTop: 30,
+        marginTop: 31,
         alignItems: 'center',
         justifyContent: 'center',
         padding: 10,
         borderRadius: 30,
     },
     txtStyle: {
-        marginTop: 70,
+        marginTop: 60,
         justifyContent: 'center',
         alignItems: 'center',
     },
